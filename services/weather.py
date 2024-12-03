@@ -1,27 +1,34 @@
 import requests
-from config import API_KEY, BASE_URL
+
+BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
 def get_weather_data(latitude, longitude):
-    # Получение locationKey по координатам
-    location_url = f"{BASE_URL}locations/v1/cities/geoposition/search"
+    """
+    Запрашивает данные о погоде из Open-Meteo API.
+    """
     params = {
-        "apikey": API_KEY,
-        "q": f"{latitude},{longitude}"
+        "latitude": latitude,
+        "longitude": longitude,
+        "current_weather": True
     }
-    response = requests.get(location_url, params=params)
-    response.raise_for_status()
-    location_key = response.json()["Key"]
+    response = requests.get(BASE_URL, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Ошибка API: {response.status_code} - {response.text}")
 
-    # Получение данных о погоде
-    weather_url = f"{BASE_URL}currentconditions/v1/{location_key}"
-    weather_response = requests.get(weather_url, params={"apikey": API_KEY})
-    weather_response.raise_for_status()
-    return weather_response.json()[0]
+def parse_weather_data(raw_data):
+    """
+    Преобразует "сырые" данные из API в удобный формат.
+    """
+    current_weather = raw_data.get("current_weather", {})
+    hourly_data = raw_data.get("hourly", {})
 
-def parse_weather_data(data):
+    # Извлекаем данные текущей погоды и первых доступных значений
     return {
-        "temperature": data["Temperature"]["Metric"]["Value"],  # В градусах Цельсия
-        "humidity": data.get("RelativeHumidity"),               # Влажность в процентах
-        "wind_speed": data["Wind"]["Speed"]["Metric"]["Value"], # Скорость ветра в км/ч
-        "precipitation_probability": data.get("PrecipitationProbability", 0)  # Вероятность осадков
+        "temperature": current_weather.get("temperature"),
+        "humidity": hourly_data.get("relative_humidity_2m", [None])[0],  # Первое значение влажности
+        "wind_speed": current_weather.get("windspeed"),
+        "precipitation_probability": hourly_data.get("precipitation_probability", [None])[0]  # Первое значение вероятности дождя
     }
+
