@@ -18,9 +18,6 @@ def index():
             # Анализ погоды
             result = check_bad_weather(weather)
             
-            print(raw_weather_data)  # Печать полного ответа API
-            print(weather)  # Печать обработанных данных
-
 
             return render_template("result.html", weather=weather, result=result)
         except Exception as e:
