@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Результат проверки погоды</title>
+</head>
+<body>
+    <h1>Результат</h1>
+    <p>Температура: {{ weather['temperature'] }}°C</p>
+    <p>Влажность: {{ weather['humidity'] }}%</p>
+    <p>Скорость ветра: {{ weather['wind_speed'] }} км/ч</p>
+    <p>Вероятность осадков: {{ weather['precipitation_probability'] }}%</p>
+    <h2>{{ result }}</h2>
+    <a href="/">Назад</a>
+</body>
+</html>
