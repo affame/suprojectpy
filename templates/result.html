@@ -6,12 +6,21 @@
 </head>
 <body>
     <h1>Результат анализа погоды</h1>
-    <p>Температура: {{ weather.temperature }}°C</p>
-    <p>Влажность: {{ weather.humidity }}%</p>
-    <p>Скорость ветра: {{ weather.wind_speed }} км/ч</p>
-    <p>Вероятность дождя: {{ weather.precipitation_probability }}%</p>
-    <h2>{{ result }}</h2>
+
+    <h2>Начальная точка</h2>
+    <p>Температура: {{ start_weather.temperature }}°C</p>
+    <p>Влажность: {{ start_weather.humidity }}%</p>
+    <p>Скорость ветра: {{ start_weather.wind_speed }} км/ч</p>
+    <p>Вероятность дождя: {{ start_weather.precipitation_probability }}%</p>
+    <h3>{{ start_result }}</h3>
+
+    <h2>Конечная точка</h2>
+    <p>Температура: {{ end_weather.temperature }}°C</p>
+    <p>Влажность: {{ end_weather.humidity }}%</p>
+    <p>Скорость ветра: {{ end_weather.wind_speed }} км/ч</p>
+    <p>Вероятность дождя: {{ end_weather.precipitation_probability }}%</p>
+    <h3>{{ end_result }}</h3>
+
     <a href="/">Назад</a>
 </body>
 </html>
-

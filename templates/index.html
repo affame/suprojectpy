@@ -2,14 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Погода</title>
+    <style>
+        body {
+            background-color: #ffe4e1; /* Нежно-розовый фон */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        input {
+            padding: 5px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff6f61;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff4a3a;
+        }
+    </style>
 </head>
 <body>
-    <h1>Введите координаты</h1>
-    <form method="POST">
-        <label>Широта: <input type="text" name="latitude" required></label><br>
-        <label>Долгота: <input type="text" name="longitude" required></label><br>
-        <button type="submit">Получить прогноз</button>
-    </form>
+    <div class="container">
+        <h1>Введите координаты</h1>
+        <form method="POST">
+            <label>Широта начальной точки: <input type="text" name="start_lat" required></label>
+            <label>Долгота начальной точки: <input type="text" name="start_lon" required></label>
+            <label>Широта конечной точки: <input type="text" name="end_lat" required></label>
+            <label>Долгота конечной точки: <input type="text" name="end_lon" required></label>
+            <button type="submit">Получить прогноз</button>
+        </form>
+    </div>
 </body>
 </html>

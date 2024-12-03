@@ -8,20 +8,34 @@ app = Flask(__name__)
 def index():
     if request.method == "POST":
         try:
-            latitude = request.form.get("latitude", type=float)
-            longitude = request.form.get("longitude", type=float)
+            # Получение координат начальной и конечной точек
+            start_lat = request.form.get("start_lat", type=float)
+            start_lon = request.form.get("start_lon", type=float)
+            end_lat = request.form.get("end_lat", type=float)
+            end_lon = request.form.get("end_lon", type=float)
             
-            # Получение и обработка данных из API
-            raw_weather_data = get_weather_data(latitude, longitude)
-            weather = parse_weather_data(raw_weather_data)
+            # Получение данных из API для обеих точек
+            start_raw_weather = get_weather_data(start_lat, start_lon)
+            end_raw_weather = get_weather_data(end_lat, end_lon)
+            
+            # Парсинг данных
+            start_weather = parse_weather_data(start_raw_weather)
+            end_weather = parse_weather_data(end_raw_weather)
             
             # Анализ погоды
-            result = check_bad_weather(weather)
-            
+            start_result = check_bad_weather(start_weather)
+            end_result = check_bad_weather(end_weather)
 
-            return render_template("result.html", weather=weather, result=result)
+            # Передача данных в шаблон
+            return render_template(
+                "result.html", 
+                start_weather=start_weather, 
+                start_result=start_result,
+                end_weather=end_weather, 
+                end_result=end_result
+            )
         except Exception as e:
-            return f"Ошибка: {e}", 500
+            return render_template("error.html", error=str(e)), 500
     return render_template("index.html")
 
 if __name__ == "__main__":

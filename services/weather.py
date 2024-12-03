@@ -2,20 +2,28 @@ import requests
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
+import requests
+
+BASE_URL = "https://api.open-meteo.com/v1/forecast"
+
 def get_weather_data(latitude, longitude):
-    base_url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": latitude,
         "longitude": longitude,
         "current_weather": True,  # Запрос текущей погоды
         "hourly": "relative_humidity_2m,precipitation_probability",  # Включаем hourly данные
     }
-    response = requests.get(base_url, params=params)
+    try:
+        response = requests.get(BASE_URL, params=params)
+        response.raise_for_status()  # Проверка на HTTP-ошибки
+    except requests.RequestException as e:
+        raise Exception(f"Ошибка подключения к API: {e}")
     
-    if response.status_code != 200:
-        raise Exception(f"Ошибка API: {response.status_code} - {response.text}")
+    data = response.json()
+    if not data:
+        raise Exception("Упс. Данные API недоступны или некорректны.")
     
-    return response.json()
+    return data
 
 
 def parse_weather_data(raw_data):
@@ -35,6 +43,5 @@ def parse_weather_data(raw_data):
         "wind_speed": current_weather.get("windspeed"),
         "precipitation_probability": precipitation_probability,  # Вероятность дождя из hourly
     }
-
 
 
