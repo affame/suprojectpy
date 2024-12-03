@@ -3,19 +3,20 @@ import requests
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
 def get_weather_data(latitude, longitude):
-    """
-    Запрашивает данные о погоде из Open-Meteo API.
-    """
+    base_url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "current_weather": True
+        "current_weather": True,  # Запрос текущей погоды
+        "hourly": "relative_humidity_2m,precipitation_probability",  # Включаем hourly данные
     }
-    response = requests.get(BASE_URL, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
+    response = requests.get(base_url, params=params)
+    
+    if response.status_code != 200:
         raise Exception(f"Ошибка API: {response.status_code} - {response.text}")
+    
+    return response.json()
+
 
 def parse_weather_data(raw_data):
     """
@@ -24,11 +25,16 @@ def parse_weather_data(raw_data):
     current_weather = raw_data.get("current_weather", {})
     hourly_data = raw_data.get("hourly", {})
 
-    # Извлекаем данные текущей погоды и первых доступных значений
+    # Определяем текущий час
+    humidity = hourly_data.get("relative_humidity_2m", [None])[0]  # Первый час
+    precipitation_probability = hourly_data.get("precipitation_probability", [None])[0]
+
     return {
         "temperature": current_weather.get("temperature"),
-        "humidity": hourly_data.get("relative_humidity_2m", [None])[0],  # Первое значение влажности
+        "humidity": humidity,  # Влажность из hourly
         "wind_speed": current_weather.get("windspeed"),
-        "precipitation_probability": hourly_data.get("precipitation_probability", [None])[0]  # Первое значение вероятности дождя
+        "precipitation_probability": precipitation_probability,  # Вероятность дождя из hourly
     }
+
+
 
