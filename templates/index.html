@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Погода</title>
+    <title>Прогноз погоды</title>
     <style>
         body {
             background-color: #ffe4e1; 
@@ -57,12 +57,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>Введите координаты</h1>
+        <h1>Введите названия городов</h1>
+<p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
+    Введите названия городов полностью, например, "Москва" или "Saint Petersburg". 
+    Регистр букв не имеет значения, можно использовать русский или английский язык.
+</p>
+
         <form method="POST">
-            <label>Широта начальной точки: <input type="text" name="start_lat" required></label>
-            <label>Долгота начальной точки: <input type="text" name="start_lon" required></label>
-            <label>Широта конечной точки: <input type="text" name="end_lat" required></label>
-            <label>Долгота конечной точки: <input type="text" name="end_lon" required></label>
+            <label>Начальный город: <input type="text" name="start_city" placeholder="Например, Москва" required></label>
+            <label>Конечный город: <input type="text" name="end_city" placeholder="Например, Самара" required></label>
             <button type="submit">Получить прогноз</button>
         </form>
     </div>
