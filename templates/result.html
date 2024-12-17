@@ -20,10 +20,12 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
+            color: black; /* Черный цвет для главного заголовка */
         }
         h2 {
             font-size: 1.8rem;
             margin-bottom: 10px;
+            color: black; /* Черный цвет для заголовков городов */
         }
         p {
             font-size: 1.2rem;
@@ -57,7 +59,7 @@
     <h1>Результат анализа погоды</h1>
 
     <div class="container">
-        <h2>Начальная точка</h2>
+        <h2>{{ start_city }}</h2> <!-- Название начального города -->
         <p>Температура: {{ start_weather.temperature }}°C</p>
         <p>Влажность: {{ start_weather.humidity }}%</p>
         <p>Скорость ветра: {{ start_weather.wind_speed }} км/ч</p>
@@ -66,7 +68,7 @@
     </div>
 
     <div class="container">
-        <h2>Конечная точка</h2>
+        <h2>{{ end_city }}</h2> <!-- Название конечного города -->
         <p>Температура: {{ end_weather.temperature }}°C</p>
         <p>Влажность: {{ end_weather.humidity }}%</p>
         <p>Скорость ветра: {{ end_weather.wind_speed }} км/ч</p>
