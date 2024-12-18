@@ -1,6 +1,6 @@
 import requests
 
-YANDEX_API_KEY = "67c3277c-91e1-4fdf-8a33-b8fec2870325"  
+YANDEX_API_KEY = ""  
 YANDEX_GEOCODER_URL = "https://geocode-maps.yandex.ru/1.x/"
 
 def get_coordinates(city_name):
