@@ -35,9 +35,8 @@ def parse_weather_data(raw_data):
             "min_temperature": daily_data.get("temperature_2m_min", [None])[i],
             "precipitation_sum": daily_data.get("precipitation_sum", [None])[i],
             "wind_speed_max": daily_data.get("windspeed_10m_max", [None])[i],
-            # Предполагаем, что есть способ получить координаты для прогноза на каждый день
-            "latitude": daily_data.get("latitude", 0),  # Замените на реальное значение
-            "longitude": daily_data.get("longitude", 0),  # Замените на реальное значение
+            "latitude": daily_data.get("latitude", 0),  
+            "longitude": daily_data.get("longitude", 0), 
         })
     return forecast
 
