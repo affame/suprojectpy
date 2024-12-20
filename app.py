@@ -9,48 +9,39 @@ app = Flask(__name__)
 def index():
     if request.method == "POST":
         try:
-            # Получаем названия городов
+            # Получаем данные из формы
             start_city = request.form.get("start_city").strip()
             end_city = request.form.get("end_city").strip()
+            days = int(request.form.get("days"))
+            intermediate_cities = [
+                city.strip() for city in request.form.getlist("intermediate_cities") if city.strip()
+            ]
 
-            # Проверяем, что начальный и конечный города не совпадают
+            # Проверяем ввод
             if start_city.lower() == end_city.lower():
                 raise ValueError("Начальный и конечный города не должны совпадать!")
 
-            # Преобразуем города в координаты через Яндекс Геокодер
-            try:
-                start_lat, start_lon = get_coordinates(start_city)
-            except Exception as e:
-                raise ValueError(f"Ошибка для города '{start_city}': {str(e)}")
+            cities = [{"name": start_city}, {"name": end_city}]
+            for city in intermediate_cities:
+                cities.insert(-1, {"name": city})
 
-            try:
-                end_lat, end_lon = get_coordinates(end_city)
-            except Exception as e:
-                raise ValueError(f"Ошибка для города '{end_city}': {str(e)}")
+            # Получение данных для всех точек маршрута
+            for city in cities:
+                try:
+                    lat, lon = get_coordinates(city["name"])
+                    city["forecast"] = parse_weather_data(get_weather_data(lat, lon, days))
+                except Exception as e:
+                    raise ValueError(f"Ошибка для города '{city['name']}': {str(e)}")
 
-            # Получаем данные о погоде
-            start_raw_weather = get_weather_data(start_lat, start_lon)
-            end_raw_weather = get_weather_data(end_lat, end_lon)
-
-            # Парсим и анализируем данные
-            start_weather = parse_weather_data(start_raw_weather)
-            end_weather = parse_weather_data(end_raw_weather)
-            start_result = check_bad_weather(start_weather)
-            end_result = check_bad_weather(end_weather)
-
-            # Передаем данные в шаблон
             return render_template(
                 "result.html",
-                start_city=start_city,
-                end_city=end_city,
-                start_weather=start_weather,
-                start_result=start_result,
-                end_weather=end_weather,
-                end_result=end_result
+                cities=cities,
+                days=days
             )
         except Exception as e:
             return render_template("error.html", error=str(e)), 500
     return render_template("index.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

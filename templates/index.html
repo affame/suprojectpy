@@ -20,6 +20,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
+            width: 100%;
+            max-width: 500px;
         }
         h1 {
             margin-bottom: 20px;
@@ -30,16 +32,17 @@
             margin: 10px 0;
             font-size: 1.1rem;
         }
-        input {
+        input, select {
             padding: 5px;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
             box-sizing: border-box;
+            margin-bottom: 10px;
         }
         button {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px 20px;
             background-color: #ff6f61;
             color: #ffffff;
@@ -57,17 +60,39 @@
 </head>
 <body>
     <div class="container">
-        <h1>Введите названия городов</h1>
-<p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
-    Введите названия городов полностью, например, "Москва" или "Saint Petersburg". 
-    Регистр букв не имеет значения, можно использовать русский или английский язык.
-</p>
-
+        <h1>Введите данные для прогноза погоды</h1>
         <form method="POST">
-            <label>Начальный город: <input type="text" name="start_city" placeholder="Например, Москва" required></label>
-            <label>Конечный город: <input type="text" name="end_city" placeholder="Например, Самара" required></label>
+            <label>Начальный город: 
+                <input type="text" name="start_city" placeholder="Например, Москва" required>
+            </label>
+            <label>Конечный город: 
+                <input type="text" name="end_city" placeholder="Например, Санкт-Петербург" required>
+            </label>
+            <label>Прогноз на: 
+                <select name="days">
+                    <option value="1">1 день</option>
+                    <option value="3">3 дня</option>
+                    <option value="5">5 дней</option>
+                </select>
+            </label>
+            <label>Промежуточные точки маршрута:</label>
+            <div id="intermediate-cities">
+                <input type="text" name="intermediate_cities" placeholder="Например, Казань">
+            </div>
+            <button type="button" onclick="addIntermediateCity()">Добавить точку</button>
             <button type="submit">Получить прогноз</button>
         </form>
     </div>
+
+    <script>
+        function addIntermediateCity() {
+            const container = document.getElementById("intermediate-cities");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.name = "intermediate_cities";
+            input.placeholder = "Промежуточный город";
+            container.appendChild(input);
+        }
+    </script>
 </body>
 </html>

@@ -11,7 +11,6 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
             color: #333333;
@@ -20,16 +19,32 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
-            color: black; /* Черный цвет для главного заголовка */
         }
         h2 {
             font-size: 1.8rem;
             margin-bottom: 10px;
-            color: black; /* Черный цвет для заголовков городов */
         }
-        p {
-            font-size: 1.2rem;
-            margin: 5px 0;
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 600px;
+            margin: 15px 0;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #ff6f61;
+            color: white;
+        }
+        td {
+            background-color: #fefefe;
         }
         a {
             display: inline-block;
@@ -44,37 +59,36 @@
         a:hover {
             background-color: #ff4a3a;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 500px;
-        }
     </style>
 </head>
 <body>
-    <h1>Результат анализа погоды</h1>
+    <h1>Прогноз погоды для маршрута</h1>
 
-    <div class="container">
-        <h2>{{ start_city }}</h2> <!-- Название начального города -->
-        <p>Температура: {{ start_weather.temperature }}°C</p>
-        <p>Влажность: {{ start_weather.humidity }}%</p>
-        <p>Скорость ветра: {{ start_weather.wind_speed }} км/ч</p>
-        <p>Вероятность дождя: {{ start_weather.precipitation_probability }}%</p>
-        <h3>{{ start_result }}</h3>
-    </div>
-
-    <div class="container">
-        <h2>{{ end_city }}</h2> <!-- Название конечного города -->
-        <p>Температура: {{ end_weather.temperature }}°C</p>
-        <p>Влажность: {{ end_weather.humidity }}%</p>
-        <p>Скорость ветра: {{ end_weather.wind_speed }} км/ч</p>
-        <p>Вероятность дождя: {{ end_weather.precipitation_probability }}%</p>
-        <h3>{{ end_result }}</h3>
-    </div>
+    {% for city in cities %}
+        <h2>{{ city.name }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Макс. температура</th>
+                    <th>Мин. температура</th>
+                    <th>Осадки</th>
+                    <th>Макс. ветер</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in city.forecast %}
+                    <tr>
+                        <td>{{ day.date }}</td>
+                        <td>{{ day.max_temperature }}°C</td>
+                        <td>{{ day.min_temperature }}°C</td>
+                        <td>{{ day.precipitation_sum }} мм</td>
+                        <td>{{ day.wind_speed_max }} км/ч</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
 
     <a href="/">Назад</a>
 </body>

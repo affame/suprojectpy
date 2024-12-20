@@ -3,39 +3,41 @@ import requests
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
 
-def get_weather_data(latitude, longitude):
+def get_weather_data(latitude, longitude, days=1):
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "current_weather": True,  #Запрос текущей погоды
-        "hourly": "relative_humidity_2m,precipitation_probability",  #Включаем hourly данные
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max",
+        "timezone": "auto",
+        "forecast_days": days,
     }
     try:
         response = requests.get(BASE_URL, params=params)
-        response.raise_for_status()  #Проверка на HTTP-ошибки
+        response.raise_for_status()
     except requests.RequestException as e:
         raise Exception(f"Ошибка подключения к API: {e}")
     
     data = response.json()
     if not data:
-        raise Exception("Упс. Данные API недоступны или некорректны.")
+        raise Exception("Данные API недоступны или некорректны.")
     
     return data
 
 
-def parse_weather_data(raw_data): #Превращает данные в удобный формат
-    current_weather = raw_data.get("current_weather", {})
-    hourly_data = raw_data.get("hourly", {})
+def parse_weather_data(raw_data):
+    daily_data = raw_data.get("daily", {})
+    days = len(daily_data.get("temperature_2m_max", []))
+    
+    forecast = []
+    for i in range(days):
+        forecast.append({
+            "date": daily_data.get("time", [])[i],
+            "max_temperature": daily_data.get("temperature_2m_max", [None])[i],
+            "min_temperature": daily_data.get("temperature_2m_min", [None])[i],
+            "precipitation_sum": daily_data.get("precipitation_sum", [None])[i],
+            "wind_speed_max": daily_data.get("windspeed_10m_max", [None])[i],
+        })
+    return forecast
 
-    #Определяем текущий час
-    humidity = hourly_data.get("relative_humidity_2m", [None])[0]  #Первый час
-    precipitation_probability = hourly_data.get("precipitation_probability", [None])[0]
-
-    return {
-        "temperature": current_weather.get("temperature"),
-        "humidity": humidity,  #Влажность из hourly
-        "wind_speed": current_weather.get("windspeed"),
-        "precipitation_probability": precipitation_probability,  #Вероятность дождя из hourly
-    }
 
 
