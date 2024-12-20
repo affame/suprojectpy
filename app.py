@@ -29,6 +29,8 @@ def index():
             for city in cities:
                 try:
                     lat, lon = get_coordinates(city["name"])
+                    city["lat"] = lat
+                    city["lon"] = lon
                     city["forecast"] = parse_weather_data(get_weather_data(lat, lon, days))
                 except Exception as e:
                     raise ValueError(f"Ошибка для города '{city['name']}': {str(e)}")
@@ -41,7 +43,6 @@ def index():
         except Exception as e:
             return render_template("error.html", error=str(e)), 500
     return render_template("index.html")
-
-
+    
 if __name__ == "__main__":
     app.run(debug=True)

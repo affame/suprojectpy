@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Результат</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <style>
         body {
             background-color: #ffe4e1; 
@@ -46,6 +47,11 @@
         td {
             background-color: #fefefe;
         }
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
         a {
             display: inline-block;
             margin-top: 20px;
@@ -63,6 +69,8 @@
 </head>
 <body>
     <h1>Прогноз погоды для маршрута</h1>
+
+    <div id="map"></div>
 
     {% for city in cities %}
         <h2>{{ city.name }}</h2>
@@ -91,5 +99,41 @@
     {% endfor %}
 
     <a href="/">Назад</a>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        let map = L.map('map').setView([55.7558, 37.6173], 6);  // Центр на Россию по умолчанию
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        function addWeatherMarkers(cities) {
+            let latLngs = [];  
+            cities.forEach(function(city) {
+                const weatherInfo = city.forecast[0];  // Используем данные только для первого дня
+                const marker = L.circleMarker([city.lat, city.lon], {
+                    color: "#9400D3",  
+                    radius: 8
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <strong>${city.name}</strong><br>
+                    Макс. температура: ${weatherInfo.max_temperature}°C<br>
+                    Мин. температура: ${weatherInfo.min_temperature}°C<br>
+                    Осадки: ${weatherInfo.precipitation_sum} мм<br>
+                    Ветер: ${weatherInfo.wind_speed_max} км/ч
+                `);
+
+                latLngs.push([city.lat, city.lon]);  // Добавляем координаты в массив для линии
+            });
+
+            // Добавляем линию маршрута
+            L.polyline(latLngs, { color: '#C71585', weight: 5 }).addTo(map);
+        }
+
+        // Передаем данные с серверной стороны
+        addWeatherMarkers({{ cities | tojson }});
+    </script>
 </body>
 </html>
