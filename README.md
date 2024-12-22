@@ -20,7 +20,7 @@ Weather App — это веб-приложение для анализа пог�
 Скачайте проект на локальную машину:
 
 ```bash
-git clone https://github.com/affame/suprojectpy2.git
+git clone https://github.com/affame/suprojectpy.git
 ```
 
 ### 2. Установите зависимости
