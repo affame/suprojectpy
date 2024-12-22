@@ -51,17 +51,29 @@ def index():
 
 
 dash_app.layout = html.Div([
-    html.H1("Карта маршрута"),
+    html.H1("Карта маршрута", style={'textAlign': 'center', 'color': '#000', 'marginBottom': '20px'}),
+    html.P(
+        "Чтобы поменять город для построения графика, нажмите на маркер на карте.",
+        style={'textAlign': 'center', 'color': '#000', 'marginBottom': '20px'}
+    ),
 
     html.Div([
         dash_leaflet.Map(center=[50, 50], zoom=4, children=[
             dash_leaflet.TileLayer(),
             dash_leaflet.LayerGroup(id="markers-layer"),
-            dash_leaflet.Polyline(id="route-line", positions=[])
-        ], id="map", style={'width': '50vw', 'height': '50vh'}),
+            dash_leaflet.Polyline(
+                id="route-line", positions=[], color="#C71585", weight=4
+            )
+        ], id="map", style={'width': '50vw', 'height': '50vh', 'margin': '0 auto', 'marginBottom': '20px'}),
 
-        html.Div(id='weather-graph-container', style={'width': '50vw', 'height': '50vh'})
-    ], style={'display': 'flex', 'width': '100%', 'justify-content': 'space-between'}),
+        html.Div(id='weather-graph-container', style={
+            'width': '50vw', 
+            'height': '50vh', 
+            'margin': '0 auto', 
+            'textAlign': 'center',
+            'marginBottom': '20px'
+        })
+    ], style={'display': 'flex', 'flexDirection': 'column', 'alignItems': 'center'}),
 
     html.Div([
         dcc.Dropdown(
@@ -73,9 +85,8 @@ dash_app.layout = html.Div([
             ],
             value='temperature_2m',
             clearable=False,
-            style={'width': '50%'}
+            style={'width': '50%', 'margin': '0 auto', 'marginBottom': '10px'}
         ),
-
         dcc.Dropdown(
             id='days-dropdown',
             options=[
@@ -84,10 +95,21 @@ dash_app.layout = html.Div([
             ],
             value=3,
             clearable=False,
-            style={'width': '50%'}
+            style={'width': '50%', 'margin': '0 auto', 'marginBottom': '20px'}
         )
-    ], style={'width': '100%', 'marginTop': '10px', 'display': 'flex', 'justify-content': 'center'})
-])
+    ], style={'width': '100%', 'marginTop': '10px', 'marginBottom': '20px'}),
+
+    html.Div([
+        html.A("Назад", href="/", style={
+            'display': 'inline-block', 
+            'padding': '10px 20px', 
+            'backgroundColor': '#ff69b4', 
+            'color': '#fff', 
+            'textDecoration': 'none', 
+            'borderRadius': '5px'
+        })
+    ], style={'textAlign': 'center', 'marginBottom': '20px'})
+], style={'backgroundColor': '#ffc0cb', 'minHeight': '100vh', 'padding': '20px'})
 
 
 @dash_app.callback(
@@ -104,10 +126,17 @@ def add_route_and_markers(_):
             route_positions.append(coordinates)
             marker = dash_leaflet.Marker(position=coordinates, children=[
                 dash_leaflet.Tooltip(city["name"]),
-                dash_leaflet.Popup([html.H3(city["name"]), html.P("")])
-            ], id={'type': 'marker', 'index': city["name"]})
+                dash_leaflet.Popup([html.H3(city["name"], style={'textAlign': 'center'}), html.P("")])
+            ], id={'type': 'marker', 'index': city["name"]}, icon={
+                "iconUrl": "https://cdn-icons-png.flaticon.com/512/727/727827.png",  # Розовый маркер
+                "iconSize": [25, 41],
+                "iconAnchor": [12, 41],
+                "popupAnchor": [1, -34]
+            })
             city_markers.append(marker)
     return city_markers, route_positions
+
+
 
 
 @dash_app.callback(
@@ -160,7 +189,7 @@ def update_graph(selected_metric, days, _):
 
                 fig = go.Figure()
                 fig.add_trace(
-                    go.Scatter(x=dates, y=values, mode='lines+markers', name=replace_value(selected_metric))
+                    go.Scatter(x=dates, y=values, mode='lines+markers', name=replace_value(selected_metric), line=dict(color='pink'))
                 )
                 fig.update_layout(
                     title=f'{replace_value(selected_metric)} в {city_name} за {days} дней',
