@@ -17,7 +17,6 @@ def index():
     global cities
     if request.method == "POST":
         try:
-            # Получаем данные из формы
             start_city = request.form.get("start_city").strip()
             end_city = request.form.get("end_city").strip()
             days = int(request.form.get("days"))
@@ -25,7 +24,6 @@ def index():
                 city.strip() for city in request.form.getlist("intermediate_cities") if city.strip()
             ]
 
-            # Проверяем ввод
             if start_city.lower() == end_city.lower():
                 raise ValueError("Начальный и конечный города не должны совпадать!")
 
@@ -33,20 +31,24 @@ def index():
             for city in intermediate_cities:
                 cities.insert(-1, {"name": city})
 
-            # Получение данных для всех точек маршрута
             for city in cities:
                 try:
                     lat, lon = get_coordinates(city["name"])
                     city["lat"] = lat
                     city["lon"] = lon
                     city["forecast"] = parse_weather_data(get_weather_data(lat, lon, days))
+                except IndexError:
+                    raise ValueError(f"Город '{city['name']}' не найден. Проверьте правильность ввода.")
                 except Exception as e:
-                    raise ValueError(f"Ошибка для города '{city['name']}': {str(e)}")
+                    raise ValueError(f"Не удалось обработать город '{city['name']}': {str(e)}.Проверьте правильность ввода.")
+                    
             return redirect('/dash/')
-            
+        except ValueError as e:
+            return render_template("error.html", error=str(e)), 400
         except Exception as e:
-            return render_template("error.html", error=str(e)), 500
+            return render_template("error.html", error="Произошла непредвиденная ошибка. Попробуйте снова."), 500
     return render_template("index.html")
+
 
 dash_app.layout = html.Div([
     html.H1("Карта маршрута"),
@@ -122,7 +124,7 @@ def update_graph(selected_metric, days, _):
             'max_temperature': 'Максимальная температура',
             'min_temperature': 'Минимальная температура',
             'precipitation_sum': 'Осадки',
-            'windspeed_10m': 'Скорость ветра',  # Исправлено название для ветра
+            'windspeed_10m': 'Скорость ветра',  
             'wind_speed_max': 'Максимальная скорость ветра'
         }
         return mapping.get(input_str, input_str)
@@ -145,7 +147,7 @@ def update_graph(selected_metric, days, _):
             if weather_data:
                 parsed_data = parse_weather_data(weather_data)
                 
-                # Проверяем отображение метрики
+                
                 metric_key = metric_mapping.get(selected_metric)
                 if not metric_key:
                     return html.Div("Выбранная метрика недоступна")
