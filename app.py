@@ -97,7 +97,6 @@ def add_route_and_markers(_):
     route_positions = []
 
     for city in cities:
-        # Исправлено: передаем название города, а не объект city
         coordinates = get_coordinates(city["name"])  
         if coordinates:
             route_positions.append(coordinates)
@@ -123,6 +122,7 @@ def update_graph(selected_metric, days, _):
             'max_temperature': 'Максимальная температура',
             'min_temperature': 'Минимальная температура',
             'precipitation_sum': 'Осадки',
+            'windspeed_10m': 'Скорость ветра',  # Исправлено название для ветра
             'wind_speed_max': 'Максимальная скорость ветра'
         }
         return mapping.get(input_str, input_str)
