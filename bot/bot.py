@@ -7,8 +7,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import asyncio
 
-BOT_TOKEN = "8099087032:AAG2ngeN2ap7yyf1uI-y-y2cwrHHOCTu5Sw"
-YANDEX_API_KEY = "67c3277c-91e1-4fdf-8a33-b8fec2870325"
+BOT_TOKEN = ""
+YANDEX_API_KEY = ""
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 YANDEX_GEOCODER_URL = "https://geocode-maps.yandex.ru/1.x/"
@@ -99,10 +99,28 @@ def create_days_buttons():
     keyboard.add(types.InlineKeyboardButton(text="7 дней", callback_data="7"))
     return keyboard.as_markup()
 
-# Обработчик команды start
+# Обработчик команды /start
 @dp.message(Command("start"))
 async def start_command(message: types.Message, state: FSMContext):
-    await message.answer("Привет! Введите /weather, чтобы узнать прогноз погоды.", reply_markup=create_start_button())
+    await message.answer(
+        "Привет! Я помогу тебе узнать прогноз погоды по маршруту.\n"
+        "Вот как ты можешь использовать меня:\n\n"
+        "/weather - Получить прогноз погоды для маршрута\n"
+        "Просто введи начальный город, конечный и промежуточные города, и я покажу тебе прогноз погоды.\n\n"
+        "Попробуй команду /help, чтобы получить список доступных команд."
+    )
+
+# Обработчик команды /help
+@dp.message(Command("help"))
+async def help_command(message: types.Message):
+    await message.answer(
+        "Доступные команды:\n\n"
+        "/start - Приветственное сообщение и описание функционала\n"
+        "/help - Справка по командам\n"
+        "/weather - Запуск прогнозирования погоды для маршрута\n\n"
+        "Для использования команды /weather введите начальный город, конечный и промежуточные города. "
+        "Я покажу тебе прогноз погоды на выбранный период."
+    )
 
 # Обработчик команды weather
 @dp.message(Command("weather"))
@@ -111,13 +129,6 @@ async def weather_command(message: types.Message, state: FSMContext):
     await state.set_state(WeatherStates.start_city)
 
 # Обработчик для выбора количества дней
-@dp.callback_query(lambda c: c.data.startswith("start"))
-async def process_start_button(callback_query: types.CallbackQuery, state: FSMContext):
-    # Начать новый диалог
-    await callback_query.answer("Запрос на прогноз погоды начат.")
-    await state.set_state(WeatherStates.start_city)
-    await bot.send_message(callback_query.from_user.id, "Введите начальный город:")
-
 @dp.callback_query(lambda c: c.data in ["1", "3", "5", "7"])
 async def process_days_selection(callback_query: types.CallbackQuery, state: FSMContext):
     days = int(callback_query.data)
@@ -130,15 +141,19 @@ async def process_days_selection(callback_query: types.CallbackQuery, state: FSM
 @dp.message(WeatherStates.start_city)
 async def process_start_city(message: types.Message, state: FSMContext):
     city_name = message.text.strip().lower()
-    coordinates = get_coordinates(city_name)
-    
-    if coordinates is None:
-        await message.answer(f"Город '{city_name.capitalize()}' не найден. Пожалуйста, попробуйте снова:")
-        return
+    try:
+        coordinates = get_coordinates(city_name)
+        if coordinates is None:
+            await message.answer(f"Город '{city_name.capitalize()}' не найден. Пожалуйста, попробуйте снова.")
+            return
 
-    await state.update_data(start_city=city_name)
-    await message.answer("Выберите, на сколько дней вы хотите получить прогноз погоды:", reply_markup=create_days_buttons())
-    await state.set_state(WeatherStates.days)
+        await state.update_data(start_city=city_name)
+        await message.answer("Выберите, на сколько дней вы хотите получить прогноз погоды:", reply_markup=create_days_buttons())
+        await state.set_state(WeatherStates.days)
+    except ValueError as e:
+        await message.answer(f"Ошибка: {str(e)}. Попробуйте снова.")
+    except Exception as e:
+        await message.answer(f"Произошла ошибка: {str(e)}. Пожалуйста, попробуйте снова.")
 
 # Обработчик конечного города
 @dp.message(WeatherStates.end_city)
@@ -151,16 +166,19 @@ async def process_end_city(message: types.Message, state: FSMContext):
         await message.answer("Ошибка: начальный и конечный города не должны совпадать! Введите другой конечный город:")
         return
     
-    coordinates = get_coordinates(end_city)
-    if coordinates is None:
-        await message.answer(f"Город '{end_city.capitalize()}' не найден. Пожалуйста, попробуйте снова:")
-        return
+    try:
+        coordinates = get_coordinates(end_city)
+        if coordinates is None:
+            await message.answer(f"Город '{end_city.capitalize()}' не найден. Пожалуйста, попробуйте снова.")
+            return
 
-    await state.update_data(end_city=end_city)
-    await message.answer(
-        "Введите промежуточные города через запятую (если их нет, напишите 'нет'):"
-    )
-    await state.set_state(WeatherStates.intermediate_cities)
+        await state.update_data(end_city=end_city)
+        await message.answer("Введите промежуточные города через запятую (если их нет, напишите 'нет'):")
+        await state.set_state(WeatherStates.intermediate_cities)
+    except ValueError as e:
+        await message.answer(f"Ошибка: {str(e)}. Попробуйте снова.")
+    except Exception as e:
+        await message.answer(f"Произошла ошибка: {str(e)}. Пожалуйста, попробуйте снова.")
 
 # Обработчик промежуточных городов
 @dp.message(WeatherStates.intermediate_cities)
@@ -194,61 +212,27 @@ async def process_intermediate_cities(message: types.Message, state: FSMContext)
         for city in cities:
             try:
                 lat, lon = get_coordinates(city)
-            except ValueError as e:
-                await message.answer(
-                    f"Не удалось найти город '{city.capitalize()}'. "
-                    "Пожалуйста, проверьте правильность ввода и попробуйте снова."
-                )
-                return
+                if lat is None or lon is None:
+                    await message.answer(f"Город '{city.capitalize()}' не найден. Пропускаем его.")
+                    continue
+                weather_data = get_weather_data(lat, lon, days=days)
+                forecast = parse_weather_data(weather_data)
 
-            weather_data = get_weather_data(lat, lon, days=days)
-            forecast = parse_weather_data(weather_data)
-
-            weather_report += f"Погода для города {city.capitalize()}:\n"
-            for day in forecast:
-                weather_report += (
-                    f"Дата: {day['date']}\n"
-                    f"Макс. температура: {day['max_temperature']}°C\n"
-                    f"Мин. температура: {day['min_temperature']}°C\n"
-                    f"Осадки: {day['precipitation_sum']} мм\n"
-                    f"Макс. скорость ветра: {day['wind_speed_max']} м/с\n\n"
-                )
+                weather_report += f"Погода для города {city.capitalize()}:\n"
+                for day in forecast:
+                    weather_report += (
+                        f"Дата: {day['date']}\n"
+                        f"Макс. температура: {day['max_temperature']}°C\n"
+                        f"Мин. температура: {day['min_temperature']}°C\n"
+                        f"Осадки: {day['precipitation_sum']} мм\n"
+                        f"Макс. скорость ветра: {day['wind_speed_max']} м/с\n\n"
+                    )
+            except Exception as e:
+                await message.answer(f"Ошибка при получении данных для города '{city.capitalize()}': {str(e)}")
 
         await message.answer(f"Ваш маршрут: {route}\n\n{weather_report}")
     except Exception as e:
-        await message.answer(f"Ошибка при получении прогноза погоды: {str(e)}")
-
-    await state.clear()
-
-
-    # Получаем количество дней из состояния
-    days = data.get('days', 1)
-
-    # Получаем координаты и прогноз погоды для каждого города
-    try:
-        cities = [start_city] + intermediate_cities + [end_city]
-        weather_report = ""
-        for city in cities:
-            lat, lon = get_coordinates(city)
-            if lat is None or lon is None:
-                await message.answer(f"Город '{city.capitalize()}' не найден. Пропускаем его.")
-                continue
-            weather_data = get_weather_data(lat, lon, days=days)
-            forecast = parse_weather_data(weather_data)
-
-            weather_report += f"Погода для города {city.capitalize()}:\n"
-            for day in forecast:
-                weather_report += (
-                    f"Дата: {day['date']}\n"
-                    f"Макс. температура: {day['max_temperature']}°C\n"
-                    f"Мин. температура: {day['min_temperature']}°C\n"
-                    f"Осадки: {day['precipitation_sum']} мм\n"
-                    f"Макс. скорость ветра: {day['wind_speed_max']} м/с\n\n"
-                )
-
-        await message.answer(f"Ваш маршрут: {route}\n\n{weather_report}")
-    except Exception as e:
-        await message.answer(f"Ошибка при получении прогноза погоды: {str(e)}")
+        await message.answer(f"Произошла ошибка при обработке маршрута: {str(e)}")
 
     await state.clear()
 
